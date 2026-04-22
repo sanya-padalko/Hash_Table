@@ -28,17 +28,21 @@ void TableDtor(Table* table) {
 	free(table);
 }
 
-void EasyInsert(Node* bucket, char* key) {
-	if (!bucket) return;
+void TableInsert(Table* table, char* key) {
+	if (!table)	return;
 
-	while (bucket->next) {
-		if (!strcmp(bucket->key, key))	return;
-		bucket = bucket->next;
-	}
+	if ((float)(table->cnt + 1) / (1 << table->bit_size) > LOAD_FACTOR)
+		TableRehash(table);
+
+	int hash = get_hash(key, table->bit_size);
+	Node* node = table->buckets[hash];
 	
-	if (!strcmp(bucket->key, key))	return;
-
-	bucket->next = NodeCtor(key);
+	if (!node) {
+		table->buckets[hash] = NodeCtor(key);
+		++table->cnt;
+	}
+	else
+		table->cnt += EasyInsert(table->buckets[hash], key);
 }
 
 void TableRehash(Table* table) {
@@ -64,39 +68,42 @@ void TableRehash(Table* table) {
 	++table->bit_size;
 }
 
-void TableInsert(Table* table, char* key) {
-	if (!table)	return;
+int EasyInsert(Node* bucket, char* key) {
+	if (!bucket) return 0;
 
-	if ((float)(table->cnt + 1) / (1 << table->bit_size) > LOAD_FACTOR)
-		TableRehash(table);
-
-	int hash = get_hash(key, table->bit_size);
-	Node* node = table->buckets[hash];
+	while (bucket->next) {
+		if (!strcmp(bucket->key, key))	return 0;
+		bucket = bucket->next;
+	}
 	
-	if (!node)
-		table->buckets[hash] = NodeCtor(key);
-	else
-		EasyInsert(table->buckets[hash], key);
+	if (!strcmp(bucket->key, key))	return 0;
 
-	++table->cnt;
+	bucket->next = NodeCtor(key);
+	return 1;
 }
 
 void TablePrint(Table* table) {
-	fprintf(stderr, "hash | keys\n");
-	fprintf(stderr, "----------------------------------------------\n");
+	FILE* table_view = fopen("table_view.txt", "w");
+
+	fprintf(table_view, "  hash  | keys\n");
+	fprintf(table_view, "----------------------------------------------\n");
 	for (int i = 0; i < (1 << table->bit_size); ++i) {
-		fprintf(stderr, "%4d | ", i);
+		fprintf(table_view, "%7d | ", i);
 		Node* node = table->buckets[i];
 		while (node) {
-			fprintf(stderr, "%s", node->key);
+			fprintf(table_view, "%s", node->key);
 			if (node->next)
-				fprintf(stderr, " -> ");
+				fprintf(table_view, " -> ");
 			
 			node = node->next;
 		}
-		fprintf(stderr, "\n");
+		fprintf(table_view, "\n");
 	}
-	fprintf(stderr, "----------------------------------------------\n");
+	fprintf(table_view, "----------------------------------------------\n");
+
+	fprintf(table_view, "\nWord's count: %d\n", table->cnt);
+
+	fclose(table_view);
 }
 
 Node* NodeCtor(char* key) {

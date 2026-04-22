@@ -28,9 +28,9 @@ typedef struct Table {
 Table*	TableCtor	(int	bit_size)				;
 void	TableDtor	(Table*	table)					;
 
-void	EasyInsert	(Node* bucket, char* key)		;
-void	TableRehash	(Table* table)					;
 void	TableInsert	(Table*	table, char* key)		;
+void	TableRehash	(Table* table)					;
+int		EasyInsert	(Node* bucket, char* key)		;
 void	TablePrint	(Table* table)					;
 
 Node*	NodeCtor	(char*	key)					;
