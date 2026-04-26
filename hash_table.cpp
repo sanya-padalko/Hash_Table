@@ -1,11 +1,14 @@
 #include "hash_table.h"
+#include <nmmintrin.h>
+#include <stdint.h>
 
-Table* TableCtor(int bit_size) {
+Table* TableCtor(int bit_size, int (*func)(char*, int)) {
 	Table* table = CALLOC(Table);
 
-	table->cnt      = 0;
-	table->bit_size = bit_size;
-	table->buckets  = CALLOC_SIZE((1 << bit_size), Node*);
+	table->cnt			= 0;
+	table->bit_size		= bit_size;
+	table->buckets		= CALLOC_SIZE((1 << bit_size), Node*);
+	table->hash_func	= func;
 	for (int i = 0; i < (1 << bit_size); ++i)
 		table->buckets[i] = NULL;
 
@@ -24,6 +27,8 @@ void TableDtor(Table* table) {
 	}
 
 	table->cnt = table->bit_size = 0;
+	table->hash_func = NULL;
+
 	free(table->buckets);
 	free(table);
 }
@@ -34,7 +39,7 @@ void TableInsert(Table* table, char* key) {
 	if ((float)(table->cnt + 1) / (1 << table->bit_size) > LOAD_FACTOR)
 		TableRehash(table);
 
-	int hash = get_hash(key, table->bit_size);
+	int hash = table->hash_func(key, table->bit_size);
 	Node* node = table->buckets[hash];
 	
 	if (!node) {
@@ -51,7 +56,7 @@ void TableRehash(Table* table) {
 	for (int i = 0; i < (1 << table->bit_size); ++i) {
 		Node* node = table->buckets[i];
 		while (node) {
-			int new_hash = get_hash(node->key, table->bit_size + 1);
+			int new_hash = table->hash_func(node->key, table->bit_size + 1);
 			if (!new_buckets[new_hash])
 				new_buckets[new_hash] = NodeCtor(node->key);
 			else
@@ -109,10 +114,14 @@ void TablePrint(Table* table) {
 int TableFind(Table* table, char* key) {
 	if (!table)	return 0;
 
-	int hash = get_hash(key, table->bit_size);
+	int hash = table->hash_func(key, table->bit_size);
 	Node* node = table->buckets[hash];
+
+	char first_char = key[0];
+
 	while (node) {
-		if (!strcmp(node->key, key)) return 1;
+		if (node->key[0] == first_char && !strcmp(node->key, key)) return 1;
+
 		node = node->next;
 	}
 

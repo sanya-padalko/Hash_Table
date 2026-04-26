@@ -22,11 +22,12 @@ typedef struct Node {
 typedef struct Table {
 	int cnt;
 	int bit_size;
+	int (*hash_func)(char*, int);
 	Node** buckets;
 } Table;
 
-Table*	TableCtor	(int	bit_size)				;
-void	TableDtor	(Table*	table)					;
+Table*	TableCtor	(int	bit_size, int (*func)(char*, int))	;
+void	TableDtor	(Table*	table)								;
 
 void	TableInsert	(Table*	table, char* key)		;
 void	TableRehash	(Table* table)					;

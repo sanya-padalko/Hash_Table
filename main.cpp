@@ -6,7 +6,7 @@ void	Insertion	(Table* table)	;
 char*	Reading		(const char*)	;
 
 int main() {
-	Table* table = TableCtor(0);
+	Table* table = TableCtor(0, get_hash);
 	
 	Insertion(table);
 	char* buf = Reading("text/eng_words.txt");
@@ -47,7 +47,7 @@ int main() {
 	CALLGRIND_TOGGLE_COLLECT;
 
 	printf("\n");
-	printf("Sum: %-12lld \nAvg: %lg\n", sum_time, (double)sum_time / word_cnt);
+	printf("Sum: %-12lld \nAvg: %lg\n", sum_time, (double)sum_time / (100 * word_cnt));
 	free(word);
 	free(start_buf);
 	
