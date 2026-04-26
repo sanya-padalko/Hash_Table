@@ -133,5 +133,7 @@ void NodeDtor(Node* node) {
 }
 
 int get_hash(char* key, int size) {
-	return crc32(0, (const uchar*)key, strlen(key)) % (1 << size);
+	size_t key_len = strlen(key);
+	
+	return crc32(0, (const uchar*)key, key_len) % (1 << size);
 }

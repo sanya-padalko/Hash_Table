@@ -12,9 +12,7 @@ int main() {
 	char* buf = Reading("text/eng_words.txt");
 	int word_cnt = 2e5;
 
-	int sum_time = 0;
 	int real_cnt = 0;
-	
 	char** word = (char**)calloc(word_cnt, sizeof(char*));
 	char* start_buf = buf;
 
@@ -33,11 +31,12 @@ int main() {
 	}
 	printf("\nReal count: %d\n", real_cnt);
 
+	long long sum_time = 0;
 	CALLGRIND_TOGGLE_COLLECT;
 	for (int i = 0; i < word_cnt * 100; ++i) {
-		int start_time = __rdtsc();
+		long long start_time = __rdtsc();
 		volatile int res = TableFind(table, word[i % word_cnt]);
-		int end_time = __rdtsc();
+		long long end_time = __rdtsc();
 
 		sum_time += (end_time - start_time);
 
@@ -48,7 +47,7 @@ int main() {
 	CALLGRIND_TOGGLE_COLLECT;
 
 	printf("\n");
-	printf("Sum: %-12d \nAvg: %lg\n", sum_time, (double)sum_time / word_cnt);
+	printf("Sum: %-12lld \nAvg: %lg\n", sum_time, (double)sum_time / word_cnt);
 	free(word);
 	free(start_buf);
 	
@@ -60,7 +59,9 @@ void Insertion(Table* table) {
 	int text_len = 253250;
 	FILE* peace_n_war = fopen("table_view.txt", "r");
 	char* text_file = (char*)calloc(text_len + 10, sizeof(char));
-	fread(text_file, 1, text_len, peace_n_war);
+	if (fread(text_file, 1, text_len, peace_n_war) != text_len)
+		printf("Real file size < %d\n", text_len);
+
 	fclose(peace_n_war);
 
 	char word[100] = {};
@@ -87,7 +88,8 @@ char* Reading(const char* file_name) {
 	int file_len = (int)(2.4e6);
 	FILE* dict_file = fopen(file_name, "r");
 	char* buf = (char*)calloc(file_len + 10, sizeof(char));
-	fread(buf, 1, file_len, dict_file);
+	if (fread(buf, 1, file_len, dict_file) != file_len)
+		printf("Real file size < %d\n", file_len);
 	fclose(dict_file);
 
 	fprintf(stderr, "Reading ended\n");
