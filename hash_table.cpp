@@ -141,8 +141,23 @@ void NodeDtor(Node* node) {
 	free(node);
 }
 
+inline unsigned int my_crc32(const uchar* data, int len) {
+	unsigned int crc = 0xFFFFFFFF;
+
+	while (len >= 8) {
+		crc = (unsigned int)_mm_crc32_u64(crc, *(const uint64_t*)data);
+		data += 8;
+		len -= 8;
+	}
+
+	while (len--) 
+		crc = _mm_crc32_u8(crc, *data++);
+
+	return crc ^ 0xFFFFFFFF;
+}
+
 int get_hash(char* key, int size) {
 	size_t key_len = strlen(key);
 	
-	return crc32(0, (const uchar*)key, key_len) % (1 << size);
+	return my_crc32((const uchar*)key, key_len) % (1 << size);
 }
