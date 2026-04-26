@@ -1,5 +1,7 @@
 #include "hash_table.h"
 
+extern "C" { int my_strcmp(const char* s1, const char* s2); }
+
 Table* TableCtor(int bit_size, int (*func)(char*, int)) {
 	Table* table = CALLOC(Table);
 
@@ -118,7 +120,7 @@ int TableFind(Table* table, char* key) {
 	char first_char = key[0];
 
 	while (node) {
-		if (node->key[0] == first_char && !strcmp(node->key, key)) return 1;
+		if (node->key[0] == first_char && my_strcmp(node->key, key) == 0) return 1;
 
 		node = node->next;
 	}
