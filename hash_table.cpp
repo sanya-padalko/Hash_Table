@@ -106,6 +106,19 @@ void TablePrint(Table* table) {
 	fclose(table_view);
 }
 
+int TableFind(Table* table, char* key) {
+	if (!table)	return 0;
+
+	int hash = get_hash(key, table->bit_size);
+	Node* node = table->buckets[hash];
+	while (node) {
+		if (!strcmp(node->key, key)) return 1;
+		node = node->next;
+	}
+
+	return 0;
+}
+
 Node* NodeCtor(char* key) {
 	Node* node = CALLOC(Node);
 	node->key  = strdup(key);

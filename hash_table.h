@@ -32,6 +32,7 @@ void	TableInsert	(Table*	table, char* key)		;
 void	TableRehash	(Table* table)					;
 int		EasyInsert	(Node* bucket, char* key)		;
 void	TablePrint	(Table* table)					;
+int		TableFind	(Table* table, char* key)		;
 
 Node*	NodeCtor	(char*	key)					;
 void	NodeDtor	(Node* node)					;
