@@ -27,10 +27,11 @@ int main() {
 			++buf;
 
 		*buf = '\0';
-		printf("\r%6d/%6d", real_cnt, word_cnt);
+		fprintf(stderr, "\r%6d/%6d", real_cnt, word_cnt);
 	}
-	printf("\nReal count: %d\n", real_cnt);
+	fprintf(stderr, "\nReading dictionary ended\n\n");
 
+	fprintf(stderr, "Finding starting...\n");
 	long long sum_time = 0;
 	CALLGRIND_TOGGLE_COLLECT;
 	for (int i = 0; i < word_cnt * 100; ++i) {
@@ -41,13 +42,13 @@ int main() {
 		sum_time += (end_time - start_time);
 
 		if (i % 10000 == 0) {
-			fprintf(stderr, "\r%10d", i);
+			fprintf(stderr, "\r%8d/%d", i, word_cnt * 100);
 		}
 	}
 	CALLGRIND_TOGGLE_COLLECT;
+	fprintf(stderr, "\nFinding ended.\n");
 
-	printf("\n");
-	printf("Sum: %-12lld \nAvg: %lg\n", sum_time, (double)sum_time / (100 * word_cnt));
+	fprintf(stderr, "Sum: %-12lld \nAvg: %lg\n", sum_time, (double)sum_time / (100 * word_cnt));
 	free(word);
 	free(start_buf);
 	
@@ -80,11 +81,11 @@ void Insertion(Table* table) {
 
 	free(start_ptr);
 	fprintf(stderr, "Peace and war readed\n");
-	fprintf(stderr, "Different words: %d\n", table->cnt);
+	fprintf(stderr, "Different words: %d\n\n", table->cnt);
 }
 
 char* Reading(const char* file_name) {
-	fprintf(stderr, "Reading starting\n");
+	fprintf(stderr, "Reading dictionary starting\n");
 	int file_len = (int)(2.4e6);
 	FILE* dict_file = fopen(file_name, "r");
 	char* buf = (char*)calloc(file_len + 10, sizeof(char));
@@ -92,6 +93,5 @@ char* Reading(const char* file_name) {
 		printf("Real file size < %d\n", file_len);
 	fclose(dict_file);
 
-	fprintf(stderr, "Reading ended\n");
 	return buf;
 }
