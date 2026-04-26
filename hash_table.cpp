@@ -1,6 +1,4 @@
 #include "hash_table.h"
-#include <nmmintrin.h>
-#include <stdint.h>
 
 Table* TableCtor(int bit_size, int (*func)(char*, int)) {
 	Table* table = CALLOC(Table);
@@ -157,7 +155,23 @@ inline unsigned int my_crc32(const uchar* data, int len) {
 }
 
 int get_hash(char* key, int size) {
-	size_t key_len = strlen(key);
+	size_t key_len;
+
+	// strlen
+	__asm__ __volatile__ (
+		".intel_syntax noprefix\n\t"
+        "mov rdi, %1\n\t"
+		"xor al, al\n\t"
+		"mov rcx, -1\n\t"
+		"repne scasb\n\t"
+		"not rcx\n\t"
+		"dec rcx\n\t"
+		"mov %0, rcx\n\t"
+		".att_syntax prefix\n\t"
+        : "=r" (key_len)
+        : "r" (key)
+        : "rdi", "rcx", "rax", "cc"
+    );
 	
 	return my_crc32((const uchar*)key, key_len) % (1 << size);
 }
