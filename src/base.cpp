@@ -1,4 +1,4 @@
-#include "hash_table.h"
+#include "../hash_table.h"
 
 uint32_t crc32_table[256];
 
