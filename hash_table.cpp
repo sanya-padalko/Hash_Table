@@ -1,5 +1,7 @@
 #include "hash_table.h"
 
+uint32_t crc32_table[256];
+
 extern "C" { int my_strcmp(const char* s1, const char* s2); }
 
 Table* TableCtor(int bit_size, int (*func)(char*, int)) {
@@ -117,12 +119,10 @@ int TableFind(Table* table, char* key) {
 	int hash = table->hash_func(key, table->bit_size);
 	Node* node = table->buckets[hash];
 
-	char first_char = key[0];
-
 	while (node) {
-		if (node->key[0] == first_char && my_strcmp(node->key, key) == 0) return 1;
+		if (strcmp(node->key, key) == 0) return 1;
 
-		node = node->next;
+		node = node->next; // pgo, -flto, -ffast-math
 	}
 
 	return 0;
@@ -141,7 +141,49 @@ void NodeDtor(Node* node) {
 	free(node);
 }
 
-inline unsigned int my_crc32(const uchar* data, int len) {
+int get_hash(char* key, int size) {
+	size_t key_len = strlen(key);
+
+	// strlen
+	// __asm__ __volatile__ (
+	// 	".intel_syntax noprefix\n\t"
+    //     "mov rdi, %1\n\t"
+	// 	"xor al, al\n\t"
+	// 	"mov rcx, -1\n\t"
+	// 	"repne scasb\n\t"
+	// 	"not rcx\n\t"
+	// 	"dec rcx\n\t"
+	// 	"mov %0, rcx\n\t"
+	// 	".att_syntax prefix\n\t"
+    //     : "=r" (key_len)
+    //     : "r" (key)
+    //     : "rdi", "rcx", "rax", "cc"
+    // );
+	
+	return crc32((const char*)key, key_len) % (1 << size);
+}
+
+inline uint32_t crc32(const char* data, int len) {
+    uint32_t crc = 0xffffffff;
+    for (int i = 0; i < len; ++i)
+        crc = (crc << 8) ^ crc32_table[((crc >> 24) ^ data[i]) & 255];
+
+    return crc;
+}
+
+void gen_crc32_table() {
+    for (int i = 0; i < 256; ++i) {
+        uint32_t ch = i;
+        for (size_t j = 0; j < 8; ++j) {
+            if (ch & 1) ch = (ch >> 1) ^ CRC32_MUL;
+            else ch >>= 1;
+        }
+
+        crc32_table[i] = ch;
+    }
+}
+
+inline unsigned int opt_crc32(const char* data, int len) {
 	unsigned int crc = 0xFFFFFFFF;
 
 	while (len >= 8) {
@@ -154,26 +196,4 @@ inline unsigned int my_crc32(const uchar* data, int len) {
 		crc = _mm_crc32_u8(crc, *data++);
 
 	return crc ^ 0xFFFFFFFF;
-}
-
-int get_hash(char* key, int size) {
-	size_t key_len;
-
-	// strlen
-	__asm__ __volatile__ (
-		".intel_syntax noprefix\n\t"
-        "mov rdi, %1\n\t"
-		"xor al, al\n\t"
-		"mov rcx, -1\n\t"
-		"repne scasb\n\t"
-		"not rcx\n\t"
-		"dec rcx\n\t"
-		"mov %0, rcx\n\t"
-		".att_syntax prefix\n\t"
-        : "=r" (key_len)
-        : "r" (key)
-        : "rdi", "rcx", "rax", "cc"
-    );
-	
-	return my_crc32((const uchar*)key, key_len) % (1 << size);
 }
