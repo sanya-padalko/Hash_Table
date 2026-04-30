@@ -11,7 +11,7 @@ g++ -g -O3 -msse4.2 main.cpp src/base.cpp -o bin/baseO3
 
 echo -e "\n-------------------------- Compilation ended -------------------------\n"
 
-hyperfine --export-markdown results/o_comp.md --warmup 3 --runs 50 \
+hyperfine --export-markdown results/o_comp.md --warmup 3 --runs 7 \
     './bin/baseO0' \
     './bin/baseO1' \
     './bin/baseO2' \
