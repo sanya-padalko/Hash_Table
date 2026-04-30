@@ -4,12 +4,12 @@ echo -e "\n----------------------- Optimization #3 started ---------------------
 
 rm -f results/table_results.csv
 
-g++ -g -O2 -msse4.2 main.cpp my_strcmp.s src/opt3.cpp -o bin/opt_strlen
+g++ -g -O2 -msse4.2 main.cpp my_strcmp.s src/opt3.cpp -o bin/opt_assem
 
 echo -e "\n-------------------------- Compilation ended -------------------------\n"
 
-hyperfine --export-markdown results/opt_strlen.md --warmup 3 --runs 7 \
-    './bin/opt_strlen'
+hyperfine --export-markdown results/opt_assem.md --warmup 3 --runs 7 \
+    './bin/opt_assem'
 
 echo -e "\n--------------------------- Tests counted ---------------------------\n"
 
