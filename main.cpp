@@ -21,7 +21,7 @@ ll		GetTicks	(Table* table, char* word)					;
 
 int main() {
 	gen_crc32_table();
-	Table* table = TableCtor(0, get_hash); // read about caches
+	Table* table = TableCtor(0, get_hash);
 	Insertion(table);
 
 	char*	text 	 = DictReading("text/eng_words.txt");
