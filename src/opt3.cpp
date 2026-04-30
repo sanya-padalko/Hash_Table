@@ -114,67 +114,61 @@ void TablePrint(Table* table) {
 }
 
 int TableFind(Table* table, char* key) {
-	if (!table)	return 0;
-
-	int hash = table->hash_func(key, table->bit_size);
-	Node* node = table->buckets[hash];
-
-	while (node) {
-		if (my_strcmp(node->key, key) == 0) return 1;
-
-		node = node->next;
-	}
-
-	return 0;
-
-	fprintf(stderr, "GOIDA\n");
 	__asm__ __volatile__ (
-		".intel_syntax noprefix				\n\t"
+		".intel_syntax noprefix					\n\t"
 
-		"test    rdi, rdi					\n\t"
-        "je      .null_table				\n\t"
-        "push    rbp						\n\t"
-        "mov     rbp, rsi					\n\t"
-        "push    rbx						\n\t"
-        "mov     rbx, rdi					\n\t"
-        "sub     rsp, 8						\n\t"
-        "mov     esi, DWORD PTR [rdi+4]		\n\t"
-        "mov     rdi, rbp					\n\t"
-        "call    [QWORD PTR [rbx+8]]		\n\t"
-        "mov     rdx, QWORD PTR [rbx+16]	\n\t"
-        "cdqe								\n\t"
-        "mov     rbx, QWORD PTR [rdx+rax*8]	\n\t"
-        "test    rbx, rbx					\n\t"
-        "jne     .check						\n\t"
-        "jmp     .not_find					\n\t"
+		"test    rdi, rdi						\n\t"
+        "je      .null_table					\n\t"
+        "push    rbp							\n\t"
+        "mov     rbp, rsi						\n\t"
+        "push    rbx							\n\t"
+        "mov     rbx, rdi						\n\t"
+        "sub     rsp, 8							\n\t"
+        "mov     esi, DWORD PTR [rdi+4]			\n\t"
+        "mov     rdi, rbp						\n\t"
+        "call    [QWORD PTR [rbx+8]]			\n\t"
+        "mov     rdx, QWORD PTR [rbx+16]		\n\t"
+        "cdqe									\n\t"
+        "mov     rbx, QWORD PTR [rdx+rax*8]		\n\t"
+        "test    rbx, rbx						\n\t"
+        "jne     .check							\n\t"
+        "jmp     .not_find						\n\t"
 
-	".next_check:							\n\t"
-        "mov     rbx, QWORD PTR [rbx+8]		\n\t"
-        "test    rbx, rbx					\n\t"
-        "je      .not_find					\n\t"
+	".next_check:								\n\t"
+        "mov     rbx, QWORD PTR [rbx+8]			\n\t"
+        "test    rbx, rbx						\n\t"
+        "je      .not_find						\n\t"
 
-	".check:								\n\t"
-        "mov     rdi, QWORD PTR [rbx]		\n\t"
-        "mov     rsi, rbp					\n\t"
-        "call    strcmp						\n\t"
-        "test    eax, eax					\n\t"
-        "jne     .next_check				\n\t"
-        "add     rsp, 8						\n\t"
-        "mov     eax, 1						\n\t"
-        "pop     rbx						\n\t"
-        "pop     rbp						\n\t"
-        "ret								\n\t"
+	".check:									\n\t"
+        "mov     rdi, QWORD PTR [rbx]			\n\t"
+        "mov     rsi, rbp						\n\t"
+        "mov     al, BYTE PTR [rsi]				\n\t"
+		"mov	 cl, BYTE PTR [rdi]				\n\t"
+		"cmp	 al, cl							\n\t"
+		"jne	 .neq							\n\t"
+		"inc	 rsi							\n\t"
+		"inc	 rdi							\n\t"
+        "call    my_strcmp						\n\t"
+	
+	".neq:										\n\t"
+        "test    eax, eax						\n\t"
+        "jne     .next_check					\n\t"
+        "add     rsp, 8							\n\t"
+        "mov     eax, 1							\n\t"
+        "pop     rbx							\n\t"
+        "pop     rbp							\n\t"
+        "ret									\n\t"
 
-	".not_find:								\n\t"
-        "add     rsp, 8						\n\t"
-        "xor     eax, eax					\n\t"
-        "pop     rbx						\n\t"
-        "pop     rbp						\n\t"
-        "ret								\n\t"
+	".not_find:									\n\t"
+        "add     rsp, 8							\n\t"
+        "xor     eax, eax						\n\t"
+        "pop     rbx							\n\t"
+        "pop     rbp							\n\t"
+        "ret									\n\t"
 
-	".null_table:							\n\t"
+	".null_table:								\n\t"
 
-		".att_syntax prefix					\n\t"
+		".att_syntax prefix						\n\t"
 		: 
 		:
 		: "rax", "rcx", "rdx", "rsi", "rdi", "memory"
@@ -184,23 +178,7 @@ int TableFind(Table* table, char* key) {
 }
 
 int get_hash(char* key, int size) {
-	size_t key_len;
-
-	//strlen
-	__asm__ __volatile__ (
-		".intel_syntax noprefix\n\t"
-        "mov rdi, %1\n\t"
-		"xor al, al\n\t"
-		"mov rcx, -1\n\t"
-		"repne scasb\n\t"
-		"not rcx\n\t"
-		"dec rcx\n\t"
-		"mov %0, rcx\n\t"
-		".att_syntax prefix\n\t"
-        : "=r" (key_len)
-        : "r" (key)
-        : "rdi", "rcx", "rax", "cc"
-    );
+	size_t key_len = strlen(key);
 	
 	return opt_crc32((const char*)key, key_len) % (1 << size);
 }
