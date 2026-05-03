@@ -19,6 +19,6 @@ hyperfine --export-markdown results/o_comp.md --warmup 3 --runs 7 \
 
 echo -e "\n--------------------------- Tests counted ---------------------------\n"
 
-python3 proc_res.py 4
+python3 proc_res.py 4 4
 
 echo -e "------------------------- O-comparison ended -------------------------\n"
