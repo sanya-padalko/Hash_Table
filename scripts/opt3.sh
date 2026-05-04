@@ -8,11 +8,11 @@ g++ -g -O3 -msse4.2 main.cpp src/my_strcmp.s src/opt3.cpp -o bin/opt_assem
 
 echo -e "\n-------------------------- Compilation ended -------------------------\n"
 
-hyperfine --export-markdown results/opt_assem.md --warmup 3 --runs 7 \
+hyperfine --export-markdown results/opt_assem.md --warmup $2 --runs $1 \
     './bin/opt_assem'
 
 echo -e "\n--------------------------- Tests counted ---------------------------\n"
 
-python3 results_gen.py 1 3
+python3 results_gen.py 1 3 $1 $2
 
 echo -e "------------------------ Optimization #3 ended -----------------------\n"
