@@ -24,4 +24,4 @@ my_strcmp:
 	sub   eax, edx
 	ret
 
-.section .note.GNU-stack,"",@progbits
+.section .note.GNU-stack, "", @progbits
