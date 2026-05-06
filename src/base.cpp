@@ -112,14 +112,13 @@ void TablePrint(Table* table) {
 }
 
 int TableFind(Table* table, char* key) {
-	if (!table)	return 0;
+	if (!table || !key)	return 0;
 
 	int hash = table->hash_func(key, table->bit_size);
 	Node* node = table->buckets[hash];
 
 	while (node) {
-		int comp_result = strcmp(node->key, key);
-		if (comp_result == 0) return 1;
+		if (strcmp(node->key, key) == 0) return 1;
 
 		node = node->next;
 	}
