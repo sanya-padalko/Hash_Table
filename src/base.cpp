@@ -118,7 +118,8 @@ int TableFind(Table* table, char* key) {
 	Node* node = table->buckets[hash];
 
 	while (node) {
-		if (strcmp(node->key, key) == 0) return 1;
+		int comp_result = strcmp(node->key, key);
+		if (comp_result == 0) return 1;
 
 		node = node->next;
 	}

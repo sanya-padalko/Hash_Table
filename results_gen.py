@@ -36,7 +36,7 @@ def calc_error(a, warm_cnt, test_cnt):
 
 def print_begin(test_ind):
 	if (test_ind == 0):
-		print("## -O2:\n")
+		print("## -O3:\n")
 
 	elif (test_ind == 1):
 		print("## Замена strcmp на my_strcmp из ассемблерного файла\n")
@@ -47,7 +47,7 @@ def print_begin(test_ind):
 		print("\n```\n")
 
 	elif (test_ind == 2):
-		print("## Замена crc32 на intrinsic-и:\n")
+		print("## Замена crc32 на intrinsic-и\n")
 		print("```c")
 		with open('src/_opt_crc32.cpp', 'r') as crc:
 			for c in crc.read():
@@ -62,7 +62,7 @@ def print_begin(test_ind):
 				print(c, end='') 
 		print("\n```\n")
 
-		print("## Замена TableFind на ассемблерную вставку:\n")
+		print("## Ассемблерная вставка, проверяющая первые два символа\n")
 
 		print("```c")
 		with open('src/find_opt.cpp', 'r') as opt_find:
@@ -73,12 +73,12 @@ def print_begin(test_ind):
 	return
 
 
-def print_calc(avg, last_avg, err, last_err):
+def print_calc(avg, last_avg, err, last_err, add_str="относительно -O3"):
 	boost	= round(((last_avg - avg) / last_avg) * 100, 2)
 	rel_err = round(sqrt(last_err * last_err + err * err) / 100, 4)
 	abs_err = round(boost * rel_err, 2)
 	print(f"""на $\\frac{{{last_avg} - {avg}}}{{{last_avg}}} * 100 =
-			{boost:.2f}\\% \\pm {abs_err:.2f}$ $\\%$ относительно -O3.\n""")
+			{boost:.2f}\\% \\pm {abs_err:.2f}$ $\\%$ {add_str}.\n""")
 	print(f"""Относительная погрешность ускорения: 
 			$\\sqrt{{{last_err:.2f}^2+{err:.2f}^2}} =
 			{round(rel_err * 100, 2):.2f}\\%$\n""")
@@ -106,7 +106,7 @@ def print_end(test_ind, last_avg, last_err, base_avg, base_err):
 	elif (test_ind == 2):
 		print(f"Полученное ускорение:\n")
 		print(f"$\\cdot$", end=' ')
-		print_calc(avg, last_avg, err, last_err)
+		print_calc(avg, last_avg, err, last_err, "относительно предыдущей версии")
 
 		last_avg = base_avg
 		last_err = base_err
@@ -118,7 +118,7 @@ def print_end(test_ind, last_avg, last_err, base_avg, base_err):
 	elif (test_ind == 3):
 		print(f"Полученное ускорение:\n")
 		print(f"$\\cdot$", end=' ')
-		print_calc(avg, last_avg, err, last_err)
+		print_calc(avg, last_avg, err, last_err, "относительно предыдущей версии")
 
 		last_avg = base_avg
 		last_err = base_err

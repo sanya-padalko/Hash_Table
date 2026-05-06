@@ -1,6 +1,7 @@
 .vscode/
 callgrind*
-text/
+text/*
 !text/clean.py
 !text/orig_text.txt
+!text/eng_words.txt
 !peace_and_war.txt

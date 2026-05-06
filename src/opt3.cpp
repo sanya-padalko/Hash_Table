@@ -114,65 +114,43 @@ void TablePrint(Table* table) {
 }
 
 int TableFind(Table* table, char* key) {
-	__asm__ __volatile__ (
-		".intel_syntax noprefix					\n\t"
+	if (!table)	return 0;
 
-		"test    rdi, rdi						\n\t"
-        "je      .null_table					\n\t"
-        "push    rbp							\n\t"
-        "mov     rbp, rsi						\n\t"
-        "push    rbx							\n\t"
-        "mov     rbx, rdi						\n\t"
-        "sub     rsp, 8							\n\t"
-        "mov     esi, DWORD PTR [rdi+4]			\n\t"
-        "mov     rdi, rbp						\n\t"
-        "call    [QWORD PTR [rbx+8]]			\n\t"
-        "mov     rdx, QWORD PTR [rbx+16]		\n\t"
-        "cdqe									\n\t"
-        "mov     rbx, QWORD PTR [rdx+rax*8]		\n\t"
-        "test    rbx, rbx						\n\t"
-        "jne     .check							\n\t"
-        "jmp     .not_find						\n\t"
+	int hash = table->hash_func(key, table->bit_size);
+	Node* node = table->buckets[hash];
 
-	".next_check:								\n\t"
-        "mov     rbx, QWORD PTR [rbx+8]			\n\t"
-        "test    rbx, rbx						\n\t"
-        "je      .not_find						\n\t"
+	while (node) {
+		int comp_result = 0;
 
-	".check:									\n\t"
-        "mov     rdi, QWORD PTR [rbx]			\n\t"
-        "mov     rsi, rbp						\n\t"
-        "mov     al, BYTE PTR [rsi]				\n\t"
-		"mov	 cl, BYTE PTR [rdi]				\n\t"
-		"cmp	 al, cl							\n\t"
-		"jne	 .neq							\n\t"
-		"inc	 rsi							\n\t"
-		"inc	 rdi							\n\t"
-        "call    my_strcmp						\n\t"
-	
-	".neq:										\n\t"
-        "test    eax, eax						\n\t"
-        "jne     .next_check					\n\t"
-        "add     rsp, 8							\n\t"
-        "mov     eax, 1							\n\t"
-        "pop     rbx							\n\t"
-        "pop     rbp							\n\t"
-        "ret									\n\t"
+		asm volatile (
+			".intel_syntax noprefix			\n\t"
+			"mov	rsi,	%1				\n\t"
+			"mov	rdi,	%2				\n\t"
+			"mov	al,		BYTE PTR [rsi]	\n\t"
+			"mov	dl,		BYTE PTR [rdi]	\n\t"
 
-	".not_find:									\n\t"
-        "add     rsp, 8							\n\t"
-        "xor     eax, eax						\n\t"
-        "pop     rbx							\n\t"
-        "pop     rbp							\n\t"
-        "ret									\n\t"
+			"cmp	al,		dl				\n\t"
+			"jne	.neq					\n\t"
+			"inc	rsi						\n\t"
+			"inc	rdi						\n\t"
+			"call	my_strcmp				\n\t"
+			"jmp	.end					\n\t"
 
-	".null_table:								\n\t"
+			".neq:							\n\t"
+			"mov	eax, 	1				\n\t"
 
-		".att_syntax prefix						\n\t"
-		: 
-		:
-		: "rax", "rcx", "rdx", "rsi", "rdi", "memory"
-	);
+			".end:							\n\t"
+			"mov	%0,		eax				\n\t"
+			".att_syntax prefix				\n\t"
+			: "=r" (comp_result)
+			: "r" (node->key), "r" (key)
+			: "rsi", "rdi", "rax", "rdx", "cc"
+		);
+
+		if (comp_result == 0) return 1;
+
+		node = node->next;
+	}
 
 	return 0;
 }

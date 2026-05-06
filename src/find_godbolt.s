@@ -22,7 +22,7 @@ TableFind(Table*, char*):
 .L4:
         mov     rdi, QWORD PTR [rbx]
         mov     rsi, rbp
-        call    strcmp
+        call    my_strcmp
         test    eax, eax
         jne     .L18
         add     rsp, 8
