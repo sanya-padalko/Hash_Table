@@ -1,4 +1,4 @@
-| Command | Mean [s] | Min [s] | Max [s] | Relative |
+| Version | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
 | `./bin/baseO0` | 2.928 ± 0.084 | 2.809 | 3.004 | 1.21 ± 0.04 |
 | `./bin/baseO1` | 2.528 ± 0.019 | 2.499 | 2.562 | 1.04 ± 0.02 |
