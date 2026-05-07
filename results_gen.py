@@ -62,7 +62,7 @@ def print_begin(test_ind):
 				print(c, end='') 
 		print("\n```\n")
 
-		print("## Ассемблерная вставка, проверяющая первые два символа\n")
+		print("## Ассемблерная вставка, проверяющая первые символы строк\n")
 
 		print("```c")
 		with open('src/find_opt.cpp', 'r') as opt_find:

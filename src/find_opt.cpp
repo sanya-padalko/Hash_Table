@@ -1,11 +1,11 @@
 int TableFind(Table* table, char* key) {
-	if (!table)	return 0;
+	if (!table || !key)	return 0;
 
 	int hash = table->hash_func(key, table->bit_size);
 	Node* node = table->buckets[hash];
 
 	while (node) {
-		asm volatile (
+		asm volatile goto (
 			".intel_syntax noprefix			\n\t"
 			"mov	rsi,	%0				\n\t"
 			"mov	rdi,	%1				\n\t"
@@ -14,18 +14,19 @@ int TableFind(Table* table, char* key) {
 
 			"cmp	al,		dl				\n\t"
 			"je		.eq						\n\t"
-			"mov	eax, 	1				\n\t"
-			"ret							\n\t"
+			"jmp	%l[next_elem]			\n\t"
 
 			".eq:							\n\t"
 			".att_syntax prefix				\n\t"
 			:
 			: "r" (node->key), "r" (key)
 			: "rsi", "rdi", "rax", "rdx", "cc"
+			: next_elem
 		);
 
 		if (my_strcmp(node->key, key) == 0) return 1;
 
+	next_elem:
 		node = node->next;
 	}
 
