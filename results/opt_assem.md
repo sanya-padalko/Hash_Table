@@ -1,3 +1,3 @@
-| Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
+| Command | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
-| `./bin/opt_assem` | 835.7 ± 16.0 | 809.2 | 863.4 | 1.00 |
+| `./bin/opt_assem` | 1.940 ± 0.018 | 1.910 | 1.965 | 1.00 |
