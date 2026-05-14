@@ -69,6 +69,12 @@ def print_begin(test_ind):
 			for c in opt_find.read():
 				print(c, end='') 
 		print("\n```\n")
+
+	elif (test_ind == 4):
+		print("## Оптимизация с использованием профилирования (версии с -O3)\n")
+
+	elif (test_ind == 5):
+		print("## Оптимизация с использованием профилирования (версии со всеми оптимизациями)\n")
 	
 	return
 
@@ -126,6 +132,16 @@ def print_end(test_ind, last_avg, last_err, base_avg, base_err):
 		print_calc(avg, last_avg, err, last_err)
 
 		print("![3-я оптимизация](../images/opt_assem.png)")
+	
+	elif (test_ind == 4):
+		last_avg = base_avg
+		last_err = base_err
+		print(f"Получили ускорение", end=' ')
+		print_calc(avg, last_avg, err, last_err)
+
+	elif (test_ind == 5):
+		print(f"Получили ускорение", end=' ')
+		print_calc(avg, last_avg, err, last_err, "относительно версии со всеми оптимизациями")
 	
 	with open('results/_last_res.txt', 'w') as save_res:
 		print(f"{avg}\n{err}", file=save_res)
