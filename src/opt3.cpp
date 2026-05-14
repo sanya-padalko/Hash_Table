@@ -148,18 +148,18 @@ int TableFind(Table* table, char* key) {
 	return 0;
 }
 
-int get_hash(char* key, int size) {
+int get_hash(char* key, int bit_size) {
 	size_t key_len = strlen(key);
 	
-	return opt_crc32((const char*)key, key_len) % (1 << size);
+	return opt_crc32((const char*)key, key_len) % (1 << bit_size);
 }
 
-inline uint32_t crc32(const char* data, int len) {
-    uint32_t crc = 0xffffffff;
+FORCE_INLINE uint32_t crc32(const char* data, int len) {
+    uint32_t crc = 0xFFFFFFFF;
     for (int i = 0; i < len; ++i)
         crc = (crc << 8) ^ crc32_table[((crc >> 24) ^ data[i]) & 255];
 
-    return crc;
+    return crc ^ 0xFFFFFFFF;
 }
 
 void gen_crc32_table() {
@@ -174,7 +174,7 @@ void gen_crc32_table() {
     }
 }
 
-inline unsigned int opt_crc32(const char* data, int len) {
+FORCE_INLINE uint32_t opt_crc32(const char* data, int len) {
 	unsigned int crc = 0xFFFFFFFF;
 
 	while (len >= 8) {

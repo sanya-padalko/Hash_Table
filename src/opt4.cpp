@@ -119,27 +119,49 @@ int TableFind(Table* table, char* key) {
 	int hash = table->hash_func(key, table->bit_size);
 	Node* node = table->buckets[hash];
 
-	while (node) {
-		if (my_strcmp(node->key, key) == 0) return 1;
 
+	while (node) {
+        register char* r_key      asm("rsi") = key;
+        register char* r_node_key asm("rdi") = node->key;
+
+		asm volatile goto (
+			".intel_syntax noprefix			\n\t"
+			"mov	al,		BYTE PTR [rsi]	\n\t"
+			"mov	dl,		BYTE PTR [rdi]	\n\t"
+
+			"cmp	al,		dl				\n\t"
+			"je		.eq						\n\t"
+			"jmp	%l[next_elem]			\n\t"
+
+			".eq:							\n\t"
+			".att_syntax prefix				\n\t"
+			:
+			: "r" (r_key), "r" (r_node_key)
+			: "rax", "rdx", "cc"
+			: next_elem
+		);
+
+		if (strcmp(node->key, key) == 0) return 1;
+
+	next_elem:
 		node = node->next;
 	}
 
 	return 0;
 }
 
-int get_hash(char* key, int bit_size) {
+int get_hash(char* key, int size) {
 	size_t key_len = strlen(key);
 	
-	return crc32((const char*)key, key_len) % (1 << bit_size);
+	return opt_crc32((const char*)key, key_len) % (1 << size);
 }
 
-FORCE_INLINE uint32_t crc32(const char* data, int len) {
-    uint32_t crc = 0xFFFFFFFF;
+inline uint32_t crc32(const char* data, int len) {
+    uint32_t crc = 0xffffffff;
     for (int i = 0; i < len; ++i)
         crc = (crc << 8) ^ crc32_table[((crc >> 24) ^ data[i]) & 255];
 
-    return crc ^ 0xFFFFFFFF;
+    return crc;
 }
 
 void gen_crc32_table() {
@@ -154,6 +176,21 @@ void gen_crc32_table() {
     }
 }
 
+inline unsigned int opt_crc32(const char* data, int len) {
+	unsigned int crc = 0xFFFFFFFF;
+
+	while (len >= 8) {
+		crc = (unsigned int)_mm_crc32_u64(crc, *(const uint64_t*)data);
+		data += 8;
+		len -= 8;
+	}
+
+	while (len--) 
+		crc = _mm_crc32_u8(crc, *data++);
+
+	return crc ^ 0xFFFFFFFF;
+}
+
 Node* NodeCtor(char* key) {
 	Node* node = CALLOC(Node);
 	node->key  = strdup(key);
@@ -166,3 +203,4 @@ void NodeDtor(Node* node) {
 	free(node->key);
 	free(node);
 }
+

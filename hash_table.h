@@ -9,6 +9,7 @@
 
 #define CALLOC(STRUCT_NAME)				(STRUCT_NAME*)calloc(1,   sizeof(STRUCT_NAME))
 #define CALLOC_SIZE(CNT, STRUCT_NAME)	(STRUCT_NAME*)calloc(CNT, sizeof(STRUCT_NAME))
+#define FORCE_INLINE 					inline __attribute__((always_inline))
 
 const	int		CRC32_MUL	= 0xedb88320;
 const 	float 	LOAD_FACTOR = 10.0;
